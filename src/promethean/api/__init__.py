@@ -1,8 +1,9 @@
 from inspect import getmembers, signature
-from typing import Callable, Type as Class, Coroutine, Any
+from typing import Type as Class
+
 import promethean
+from promethean.api.event import Event, EventHandler
 from promethean.bot import Bot
-from promethean.api.event import Event
 
 
 class SubscribeEvent:
@@ -12,10 +13,12 @@ class SubscribeEvent:
         self.bot = bot
         pass
 
-    def __call__(self, handler: Callable[['Event'], Coroutine[Any, Any, Any]]):
+    def __call__(self, handler: EventHandler):
         parameters = list(signature(handler).parameters.values())
-        if len(parameters) != 1: return
-        if parameters[0].annotation != Class[Event]: return
+        if len(parameters) != 1:
+            return
+        if parameters[0].annotation != Class[Event]:
+            return
         self.bot.events.subscribe(handler)
 
 
@@ -31,6 +34,8 @@ class SubscribeEvents:
         for method in methods:
             func = method[1]
             parameters = list(signature(func).parameters.values())
-            if len(parameters) != 1: continue
-            if parameters[0].annotation != Class[Event]: continue
+            if len(parameters) != 1:
+                continue
+            if parameters[0].annotation != Class[Event]:
+                continue
             self.bot.events.subscribe(func)
