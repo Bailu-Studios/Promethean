@@ -1,0 +1,6 @@
+def init():
+    ...
+
+
+def start():
+    ...

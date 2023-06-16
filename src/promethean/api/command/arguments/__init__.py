@@ -1,5 +1,0 @@
-from promethean.api.command.arguments.argument_type import ArgumentType
-from promethean.api.command.arguments.bool_argument_type import BoolArgumentType
-from promethean.api.command.arguments.float_argument_type import FloatArgumentType
-from promethean.api.command.arguments.integer_argument_type import IntegerArgumentType
-from promethean.api.command.arguments.string_argument_type import StringArgumentType

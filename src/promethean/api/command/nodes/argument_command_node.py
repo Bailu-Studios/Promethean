@@ -2,7 +2,7 @@ from typing import TypeVar
 
 from promethean.api.command.nodes.command_node import CommandNode
 from promethean.api.command.command_context import CommandContext
-from promethean.api.command.arguments import ArgumentType
+from promethean.api.command.arguments.argument_type import ArgumentType
 from promethean.api.command.exceptions import ArgumentException
 from promethean.api.command.command_source import S
 

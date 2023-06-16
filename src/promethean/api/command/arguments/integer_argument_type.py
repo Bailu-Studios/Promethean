@@ -7,4 +7,4 @@ class IntegerArgumentType(ArgumentType[int]):
         try:
             return int(reader)
         except ValueError:
-            raise ArgumentException("argument is not a Integer")
+            raise ArgumentException('argument is not a Integer')

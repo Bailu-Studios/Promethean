@@ -1,10 +1,12 @@
 import asyncio
-from typing import List, Dict, Callable, Coroutine, Any
+from typing import List, Dict, Callable, Coroutine, Any, TypeVar
 from typing import Type as Class
 from inspect import signature, Signature, Parameter
 from .event import Event
+from .exceptions import UnsupportedFunctionException, IllegalEventException
 
-EventHandler = Callable[[Event], Coroutine[Any, Any, Any]]
+E = TypeVar('E', bound=Event)
+EventHandler = Callable[[E], Coroutine[Any, Any, Any]]
 
 
 class EventManager:
@@ -14,13 +16,23 @@ class EventManager:
         self.map = {}
 
     async def post(self, context: Event, callback: Callable[[], Coroutine[Any, Any, Any]] = None):
+        """
+        发布事件
+        :param context: 事件内容
+        :param callback: 事件回调（仅在事件可取消且未被取消时进行）
+        :return:
+        """
         func_list: List[EventHandler] = self.map.get(context.__class__, [])
         for i in func_list:
             await i(context)
-        if context.is_cancelable and not context.is_canceled:
+        if context.is_cancelable() and not context.is_canceled():
             await callback()
 
     def subscribe(self, handler: EventHandler):
+        """
+        订阅事件
+        :param handler: 事件处理器
+        """
         sign: Signature = signature(handler)
         params: List[Parameter] = list(sign.parameters.values())
         if len(params) != 1:
@@ -34,18 +46,3 @@ class EventManager:
         else:
             func_list.append(handler)
         self.map[event_type] = func_list
-
-
-class UnsupportedFunctionException(Exception):
-    msg: str
-
-    def __init__(self, msg: str):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
-
-
-class IllegalEventException(Exception):
-    def __str__(self):
-        return 'Event handle type not match.'

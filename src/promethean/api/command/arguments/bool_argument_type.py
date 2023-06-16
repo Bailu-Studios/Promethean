@@ -9,4 +9,4 @@ class BoolArgumentType(ArgumentType[bool]):
         elif reader in ['False', 'false', 'F', 'f', 'No', 'no', 'N', 'n']:
             return False
         else:
-            raise ArgumentException("argument is not a Boolean")
+            raise ArgumentException('argument is not a Boolean')

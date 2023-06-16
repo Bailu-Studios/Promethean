@@ -7,4 +7,4 @@ class FloatArgumentType(ArgumentType[float]):
         try:
             return float(reader)
         except ValueError:
-            raise ArgumentException("argument is not a Number")
+            raise ArgumentException('argument is not a Number')
