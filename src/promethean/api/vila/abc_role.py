@@ -1,5 +1,20 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from enum import Enum
+
+
+class RoleType(Enum):
+    ALL_MEMBER = 'MEMBER_ROLE_TYPE_ALL_MEMBER'  # 所有人身份组
+    ADMIN = 'MEMBER_ROLE_TYPE_ADMIN'  # 管理员身份组
+    OWNER = 'MEMBER_ROLE_TYPE_OWNER'  # 大别野房主身份组
+    CUSTOM = 'MEMBER_ROLE_TYPE_CUSTOM'  # 其他自定义身份组
+    UNKNOWN = 'MEMBER_ROLE_TYPE_UNKNOWN'  # 未知
+
+    @classmethod
+    def resolve(cls, data: str) -> 'RoleType':
+        for i in RoleType:
+            if i.value == data:
+                return i
+        return RoleType.UNKNOWN
 
 
 class Permission(Enum):
@@ -18,34 +33,51 @@ class Permission(Enum):
     LIVE_ROOM_ORDER = 'live_room_order'  # 允许成员在直播房间中点播节目及控制节目播放
     MANAGE_SPOTLIGHT_COLLECTION = 'manage_spotlight_collection'  # 允许成员设置、移除精选消息
 
+    @classmethod
+    def resolve(cls, data: list[dict]) -> list['Permission']:
+        out = []
+        perms = []
+        for perm in data:
+            perms.append(perm['key'])
+        for i in Permission:
+            if i.value in perms:
+                out.append(i)
+        return out
+
 
 class ABCRole(ABC):
+    @abstractmethod
     def get_id(self) -> int:
         """
         :return: 身份组 id
         """
 
+    @abstractmethod
     def get_name(self) -> str:
         """
         :return: 身份组名称
         """
 
-    def get_villa_id(self):
+    @abstractmethod
+    def get_villa_id(self) -> int:
         """
         :return: 大别野 id
         """
 
+    @abstractmethod
     def get_color(self) -> str:
         """
         :return: 身份组颜色，可选项见颜色
         """
 
+    @abstractmethod
     def get_permissions(self) -> list[Permission]:
         """
         :return: 权限列表，可选项见权限
         """
 
-    def get_role_type(self) -> str:
+    @abstractmethod
+    def get_role_type(self) -> RoleType:
         """
         :return: 身份组类型
         """
