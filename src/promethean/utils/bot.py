@@ -11,6 +11,7 @@ from promethean.commands.user_command_source import UserCommandSource
 from promethean.constants import VILA_API_URL
 from promethean.events.handle_event import handle_event
 from promethean.events.command_register_event import CommandRegisterEvent, ConsoleCommandRegisterEvent
+from promethean.events.member_send_message_event import MemberSendMessageEvent
 from promethean.log import log_patcher, logger
 from promethean.requests.http_client import HTTPClient
 from promethean.requests.http_server import HTTPServer
@@ -30,14 +31,19 @@ class Bot(ABCBot):
     _bot_id: int
     _bot_secret: str
     _callback_url: str
+    _command_prefix: str
 
-    def __init__(self, bot_id: int, bot_secret: str, callback_url: str):
+    def __init__(self, bot_id: int, bot_secret: str, callback_url: str, command_prefix='/'):
         super().__init__()
         self._bot_id = bot_id
         self._bot_secret = bot_secret
         self._callback_url = callback_url
+        self._command_prefix = command_prefix
+        self._console_commands = CommandManager[ConsoleCommandSource](self._command_prefix)
         self._register_console_commands()
+        self._commands = CommandManager[UserCommandSource](self._command_prefix)
         self._register_commands()
+        self._register_event_handlers()
         self._http_client = HTTPClient(VILA_API_URL)
 
     async def run(self, host='127.0.0.1', port='23333', log_level='INFO'):
@@ -100,11 +106,19 @@ class Bot(ABCBot):
         }) as context:
             return await context['bot_msg_id']
 
+    def get_bot_uid(self):
+        return self._bot_id
+
     def _register_commands(self):
         self._events.post(CommandRegisterEvent(self._commands))
 
     def _register_console_commands(self):
         self._events.post(ConsoleCommandRegisterEvent(self._console_commands))
 
-    def get_bot_uid(self):
-        return self._bot_id
+    def _register_event_handlers(self):
+        @self.subscribe_event()
+        def on_member_send_message(event: MemberSendMessageEvent):
+            text = str(event.msg)
+            logger.info(text)
+            if text.startswith(self._command_prefix):
+                self._commands.execute(text, UserCommandSource(event.msg.get_sender(), event.msg))

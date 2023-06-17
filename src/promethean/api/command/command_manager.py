@@ -9,11 +9,11 @@ from promethean.api.command.command import S
 
 
 class CommandManager(Generic[S]):
-    start: str
+    command_prefix: str
     root_node: CommandNode[S, CommandNode] = CommandNode()
 
-    def __init__(self, start: str = '/'):
-        self.start = start
+    def __init__(self, command_prefix: str = '/'):
+        self.command_prefix = command_prefix
 
     def register(self, root: LiteralCommandNode[S]):
         """
@@ -47,5 +47,5 @@ class CommandManager(Generic[S]):
         """
         parse: list[str] = input_.split(' ')
         if len(parse) > 0:
-            parse[0] = parse[0].replace(self.start, '')
+            parse[0] = parse[0].replace(self.command_prefix, '')
         await self.root_node.execute(parse, CommandContext(source))

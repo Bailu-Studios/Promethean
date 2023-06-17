@@ -89,6 +89,9 @@ class TextMessage(Message, ABCTextMessage):
         """
         return self._text
 
+    def __str__(self):
+        return f'[{self._room_id}] [{self._sender}] {self._text}'
+
     async def serialize(self) -> dict:
         """
         :return: 序列化的消息
@@ -150,6 +153,9 @@ class ImageMessage(Message, ABCImageMessage):
         super().__init__(bot=bot, msg_id=msg_id, send_time=send_time, sender=sender,
                          room_id=room_id, villa_id=villa_id, quote=quote)
         self._url = url
+
+    def __str__(self):
+        return f'[{self._room_id}] [{self._sender}] :img[{self._url}]'
 
     def get_url(self) -> str:
         """
