@@ -1,3 +1,5 @@
+import asyncio
+
 import aiohttp
 
 from promethean.requests.exceptions.http_request_exception import HttpRequestException
@@ -15,7 +17,7 @@ class HTTPClient:
             headers = {}
         self.headers = headers
         self.base_url = base_url
-        self.session = aiohttp.ClientSession(base_url, headers=headers)
+        self.session = aiohttp.ClientSession(base_url, headers=headers, loop=asyncio.new_event_loop())
 
     def set_headers(self, headers: dict = None):
         if headers is not None:

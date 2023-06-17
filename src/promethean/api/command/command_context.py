@@ -1,6 +1,6 @@
 from typing import Generic, Dict, Any, Type as Class, TypeVar
 
-from promethean.api.command.command import S
+from promethean.api.command.command_source import S
 from promethean.api.command.exceptions import IllegalArgumentException
 
 T = TypeVar('T')

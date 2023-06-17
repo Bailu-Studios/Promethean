@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "promethean"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
     { name = "古镇天Gugle", email = "gugle@st.xatu.edu.cn" },
 ]

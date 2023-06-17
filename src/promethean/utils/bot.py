@@ -1,3 +1,5 @@
+import asyncio
+
 from promethean.api.command.command_manager import CommandManager
 from promethean.api.vila.abc_bot import ABCBot
 from promethean.api.vila.abc_group import ABCGroup
@@ -46,7 +48,7 @@ class Bot(ABCBot):
         self._register_event_handlers()
         self._http_client = HTTPClient(VILA_API_URL)
 
-    async def run(self, host='127.0.0.1', port='23333', log_level='INFO'):
+    def run(self, host='127.0.0.1', port='23333', log_level='INFO'):
         logger.configure(extra={"promethean_log_level": log_level}, patcher=log_patcher)
         logger.success("Starting Promethean...")
         self._http_server = HTTPServer(host, port)
@@ -110,15 +112,15 @@ class Bot(ABCBot):
         return self._bot_id
 
     def _register_commands(self):
-        self._events.post(CommandRegisterEvent(self._commands))
+        asyncio.run(self._events.post(CommandRegisterEvent(self._commands)))
 
     def _register_console_commands(self):
-        self._events.post(ConsoleCommandRegisterEvent(self._console_commands))
+        asyncio.run(self._events.post(ConsoleCommandRegisterEvent(self._console_commands)))
 
     def _register_event_handlers(self):
         @self.subscribe_event()
-        def on_member_send_message(event: MemberSendMessageEvent):
+        async def on_member_send_message(event: MemberSendMessageEvent):
             text = str(event.msg)
             logger.info(text)
             if text.startswith(self._command_prefix):
-                self._commands.execute(text, UserCommandSource(event.msg.get_sender(), event.msg))
+                await self._commands.execute(text, UserCommandSource(event.msg.get_sender(), event.msg))
