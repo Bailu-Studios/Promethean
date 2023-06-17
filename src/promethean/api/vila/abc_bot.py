@@ -22,41 +22,47 @@ class ABCBot(ABC):
         """
 
     @abstractmethod
-    async def get_villa(self) -> ABCVilla:
+    async def get_villa(self, villa_id: int) -> ABCVilla:
         """
+        :param villa_id: 别野 ID
         :return: 别野
         """
 
     @abstractmethod
-    async def get_member(self, member_id: int) -> ABCMember:
+    async def get_member(self, member_id: int, villa_id: int) -> ABCMember:
         """
+        :param villa_id: 别野 ID
         :param member_id: 用户 ID
         :return: 用户
         """
 
     @abstractmethod
-    async def get_role(self, role_id: int) -> ABCRole:
+    async def get_role(self, role_id: int, villa_id: int) -> ABCRole:
         """
+        :param villa_id: 别野 ID
         :param role_id: 身份组 ID
         :return: 身份组
         """
 
     @abstractmethod
-    async def get_groups(self) -> list[ABCGroup]:
+    async def get_groups(self, villa_id: int) -> list[ABCGroup]:
         """
+        :param villa_id: 别野 ID
         :return: 分组列表
         """
 
     @abstractmethod
-    async def get_room(self, room_id: int) -> ABCRoom:
+    async def get_room(self, room_id: int, villa_id: int) -> ABCRoom:
         """
+        :param villa_id: 别野 ID
         :param room_id: 房间 ID
         :return: 房间
         """
 
     @abstractmethod
-    async def send_msg(self, room_id: int, msg: ABCMessage) -> str:
+    async def send_msg(self, room_id: int, msg: ABCMessage, villa_id: int) -> str:
         """
+        :param villa_id: 别野 ID
         :param room_id: 房间 ID
         :param msg: 消息内容
         :return: 消息 ID

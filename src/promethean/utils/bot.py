@@ -30,12 +30,13 @@ class Bot(ABCBot):
     _http_client: HTTPClient
     _http_server: HTTPServer
     _headers: dict
-    _bot_id: int
+    _bot_id: str
+    _bot_uid: int
     _bot_secret: str
     _callback_url: str
     _command_prefix: str
 
-    def __init__(self, bot_id: int, bot_secret: str, callback_url: str, command_prefix='/'):
+    def __init__(self, bot_id: str, bot_secret: str, callback_url: str, command_prefix='/'):
         super().__init__()
         self._bot_id = bot_id
         self._bot_secret = bot_secret
@@ -46,7 +47,12 @@ class Bot(ABCBot):
         self._commands = CommandManager[UserCommandSource](self._command_prefix)
         self._register_commands()
         self._register_event_handlers()
-        self._http_client = HTTPClient(VILA_API_URL)
+        self._headers = {
+            'x-rpc-bot_id': self._bot_id,
+            'x-rpc-bot_secret': self._bot_secret
+        }
+        self._http_client = HTTPClient(base_url=VILA_API_URL, headers=self._headers)
+        asyncio.run(self._check_access())
 
     def run(self, host='127.0.0.1', port='23333', log_level='INFO'):
         logger.configure(extra={"promethean_log_level": log_level}, patcher=log_patcher)
@@ -54,62 +60,85 @@ class Bot(ABCBot):
         self._http_server = HTTPServer(host, port)
         self._http_server.app.post(self._callback_url, status_code=200)(lambda data: handle_event(self, data))
 
-    async def get_villa(self) -> ABCVilla:
+    async def get_villa(self, villa_id: int = None) -> ABCVilla:
         """
         :return: 别野
         """
-        async with self._http_client.get(Villa.get_link()) as context:
+        if villa_id is not None:
+            self._headers['x-rpc-bot_villa_id'] = villa_id
+        async with self._http_client.get(Villa.get_link(), headers=self._headers) as context:
             return Villa.resolve(self, await context['villa'])
 
-    async def get_member(self, member_id: int) -> ABCMember:
+    async def get_member(self, member_id: int, villa_id: int = None) -> ABCMember:
         """
+        :param villa_id: 别野 ID
         :param member_id: 用户 ID
         :return: 用户
         """
-        async with self._http_client.get(Member.get_link(), {'uid': member_id}) as context:
+        if villa_id is not None:
+            self._headers['x-rpc-bot_villa_id'] = villa_id
+        async with self._http_client.get(Member.get_link(), {'uid': member_id}, headers=self._headers) as context:
             return Member.resolve(self, await context['member'])
 
-    async def get_role(self, role_id: int) -> ABCRole:
+    async def get_role(self, role_id: int, villa_id: int = None) -> ABCRole:
         """
+        :param villa_id: 别野 ID
         :param role_id: 身份组 ID
         :return: 身份组
         """
-        async with self._http_client.get(Role.get_link(), {'role_id': role_id}) as context:
+        if villa_id is not None:
+            self._headers['x-rpc-bot_villa_id'] = villa_id
+        async with self._http_client.get(Role.get_link(), {'role_id': role_id}, headers=self._headers) as context:
             return Role.resolve(self, await context['role'])
 
-    async def get_groups(self) -> list[ABCGroup]:
+    async def get_groups(self, villa_id: int = None) -> list[ABCGroup]:
         """
+        :param villa_id: 别野 ID
         :return: 分组列表
         """
-        async with self._http_client.get(Group.get_link()) as context:
+        if villa_id is not None:
+            self._headers['x-rpc-bot_villa_id'] = villa_id
+        async with self._http_client.get(Group.get_link(), headers=self._headers) as context:
             out = []
             for data in (await context['list']):
+                data['villa_id'] = villa_id
                 out.append(Group.resolve(self, data))
             return out
 
-    async def get_room(self, room_id: int) -> ABCRoom:
+    async def get_room(self, room_id: int, villa_id: int = None) -> ABCRoom:
         """
+        :param villa_id: 别野 ID
         :param room_id: 房间 ID
         :return: 房间
         """
-        async with self._http_client.get(Room.get_link(), {'room_id': room_id}) as context:
+        if villa_id is not None:
+            self._headers['x-rpc-bot_villa_id'] = villa_id
+        async with self._http_client.get(Room.get_link(), {'room_id': room_id}, headers=self._headers) as context:
             return Room.resolve(self, await context['room'])
 
-    async def send_msg(self, room_id: int, msg: ABCMessage) -> str:
+    async def send_msg(self, room_id: int, msg: ABCMessage, villa_id: int = None) -> str:
         """
+        :param villa_id: 别野 ID
         :param room_id: 房间 ID
         :param msg: 消息内容
         :return: 消息 ID
         """
+        if villa_id is not None:
+            self._headers['x-rpc-bot_villa_id'] = villa_id
         async with self._http_client.post('/vila/api/bot/platform/sendMessage', {
             'room_id': room_id,
             'object_name': msg.get_type(),
             'msg_content': await msg.serialize()
-        }) as context:
+        }, headers=self._headers) as context:
             return await context['bot_msg_id']
 
     def get_bot_uid(self):
-        return self._bot_id
+        return self._bot_uid
+
+    async def _check_access(self):
+        async with self._http_client.post('/vila/api/bot/platform/checkMemberBotAccessToken') as context:
+            context = await context
+            self._bot_uid = context['member']['basic']['uid']
 
     def _register_commands(self):
         asyncio.run(self._events.post(CommandRegisterEvent(self._commands)))

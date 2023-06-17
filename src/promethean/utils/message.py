@@ -29,13 +29,13 @@ class Message(ABCMessage, ABC):
         回复消息
         """
         msg.set_quote(self)
-        await self._bot.send_msg(self._room_id, msg)
+        await self._bot.send_msg(self._room_id, msg, self._villa_id)
 
     async def get_sender(self) -> ABCMember:
         """
         :return: 消息发送者
         """
-        return await self._bot.get_member(self._sender)
+        return await self._bot.get_member(self._sender, self._villa_id)
 
     def get_id(self) -> str:
         """
@@ -103,7 +103,7 @@ class TextMessage(Message, ABCTextMessage):
         user_id_list = []
         for i in range(len(texts)):
             if (i % 2) - 1 == 0 and i != len(texts) - 1:
-                member = await self._bot.get_member(int(texts[i]))
+                member = await self._bot.get_member(int(texts[i]), self.get_villa_id())
                 texts[i] = f'@{member.get_name()}'
                 user_id_list.append(member.get_uid())
                 entities.append({
