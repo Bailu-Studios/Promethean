@@ -42,7 +42,3 @@ jobs:
       with:
         name: Artifacts for ${{ github.sha }}
         path: dist/
-    - name: Upload Release File
-      uses: softprops/action-gh-release@v0.1.15
-      with:
-        files: dist/*
