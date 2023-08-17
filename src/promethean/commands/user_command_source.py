@@ -1,4 +1,4 @@
-from promethean.api.command.command_source import CommandSource
+from command_dispatcher.command_source import CommandSource
 from promethean.api.vila.abc_member import ABCMember
 from promethean.api.vila.abc_message import ABCMessage
 from promethean.log import logger

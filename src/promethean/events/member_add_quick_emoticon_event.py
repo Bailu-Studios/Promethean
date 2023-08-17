@@ -1,4 +1,4 @@
-from promethean.api.event.event import Event
+from super_eventbus.event import Event
 
 
 class MemberAddQuickEmoticonEvent(Event):

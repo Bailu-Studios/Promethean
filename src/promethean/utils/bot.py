@@ -1,6 +1,6 @@
 import asyncio
 
-from promethean.api.command.command_manager import CommandManager
+from command_dispatcher.command_manager import CommandManager
 from promethean.api.vila.abc_bot import ABCBot
 from promethean.api.vila.abc_group import ABCGroup
 from promethean.api.vila.abc_member import ABCMember
@@ -35,6 +35,7 @@ class Bot(ABCBot):
     _bot_secret: str
     _callback_url: str
     _command_prefix: str
+    _running: bool
 
     def __init__(self, bot_id: str, bot_secret: str, callback_url: str, command_prefix='/'):
         super().__init__()
@@ -52,13 +53,22 @@ class Bot(ABCBot):
             'x-rpc-bot_secret': self._bot_secret
         }
         self._http_client = HTTPClient(base_url=VILA_API_URL, headers=self._headers)
-        asyncio.run(self._check_access())
+        # asyncio.run(self._check_access())
+        self._running = False
 
     def run(self, host='127.0.0.1', port='23333', log_level='INFO'):
         logger.configure(extra={"promethean_log_level": log_level}, patcher=log_patcher)
         logger.success("Starting Promethean...")
         self._http_server = HTTPServer(host, port)
         self._http_server.app.post(self._callback_url, status_code=200)(lambda data: handle_event(self, data))
+        self._running = True
+        while self._running:
+            continue
+
+    def close(self):
+        logger.success("Stopping Promethean...")
+        self._http_client.session.close()
+        self._running = False
 
     async def get_villa(self, villa_id: int = None) -> ABCVilla:
         """
@@ -137,8 +147,8 @@ class Bot(ABCBot):
 
     async def _check_access(self):
         async with self._http_client.post('/vila/api/bot/platform/checkMemberBotAccessToken') as context:
-            context = await context
-            self._bot_uid = context['member']['basic']['uid']
+            data = await context
+            self._bot_uid = data['member']['basic']['uid']
 
     def _register_commands(self):
         asyncio.run(self._events.post(CommandRegisterEvent(self._commands)))

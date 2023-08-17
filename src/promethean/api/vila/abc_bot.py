@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from inspect import signature, getmembers
 from typing import Type as Class, Callable, Coroutine, Any
 
-from promethean.api.event.event import Event
-from promethean.api.event.event_manager import EventHandler, EventManager
+from super_eventbus.event import Event
+from super_eventbus.event_manager import EventHandler, EventManager
 from promethean.api.vila.abc_group import ABCGroup
 from promethean.api.vila.abc_member import ABCMember
 from promethean.api.vila.abc_message import ABCMessage

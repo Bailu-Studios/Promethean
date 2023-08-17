@@ -1,6 +1,6 @@
-from promethean.api.event.event import Event
-from promethean.api.command.command_manager import CommandManager
-from promethean.api.command.nodes.literal_command_node import LiteralCommandNode
+from super_eventbus.event import Event
+from command_dispatcher.command_manager import CommandManager
+from command_dispatcher.nodes.literal_command_node import LiteralCommandNode
 from promethean.commands.console_command_source import ConsoleCommandSource
 from promethean.commands.user_command_source import UserCommandSource
 

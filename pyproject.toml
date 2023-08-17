@@ -21,7 +21,9 @@ dependencies = [
     "aiohttp>=3.8.4",
     "loguru>=0.7.0",
     "uvicorn>=0.22.0",
-    "fastapi>=0.97.0"
+    "fastapi>=0.97.0",
+    "super_eventbus>=0.0.3",
+    "command_dispatcher>=0.0.3"
 ]
 
 [project.urls]
